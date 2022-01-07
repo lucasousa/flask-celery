@@ -1,0 +1,32 @@
+version: "3.9"
+   
+services:
+  web:
+    build: .
+    restart: always
+    container_name: flask_celery
+    command: python -m manage
+    volumes:
+      - .:/code
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+    
+  redis:
+    image: "redis:alpine"
+    command: redis-server
+    ports: 
+      - "6379:6379"
+  
+  celery:
+    build:
+      context: .
+    entrypoint: celery
+    command: -A source.tasks worker --loglevel=info
+    volumes:
+      - .:/code
+    links:
+      - redis
+    depends_on:
+      - redis
